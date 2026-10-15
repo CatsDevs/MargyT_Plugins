@@ -7,5 +7,5 @@
   "description": "Recolour very dark interface colours; choose a preset or enter a HEX colour.",
   "description_ru": "Меняет очень тёмные цвета интерфейса; можно выбрать цвет или ввести HEX.",
   "entry": "cat.catsdevs.background.CustomBackgroundPlugin",
-  "min_api": 2
+  "min_api": 4
 }
