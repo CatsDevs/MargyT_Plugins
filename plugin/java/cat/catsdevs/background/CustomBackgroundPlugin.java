@@ -2,7 +2,6 @@ package cat.catsdevs.background;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.graphics.Color;
 import android.text.InputType;
 import android.widget.EditText;
@@ -12,52 +11,48 @@ import cat.narezany.margyt.plugin.MargyPlugin;
 public final class CustomBackgroundPlugin extends MargyPlugin {
     private static final String PREF_COLOUR = "background_colour";
     private static final int DEFAULT_COLOUR = Color.rgb(32, 33, 36);
+    private static volatile int selectedColour = DEFAULT_COLOUR;
+    private static boolean dialogShown = false;
 
     @Override
-    public void onStart(Context context) {
-        margyt().addSettingsRow(
-            "Dark background colour",
-            "Choose a preset",
-            () -> setColour(DEFAULT_COLOUR)
-        );
-        margyt().addSettingsRow(
-            "Preset: Midnight blue",
-            "#172554",
-            () -> setColour(Color.rgb(23, 37, 84))
-        );
-        margyt().addSettingsRow(
-            "Preset: Forest",
-            "#16352B",
-            () -> setColour(Color.rgb(22, 53, 43))
-        );
-        margyt().addSettingsRow(
-            "Preset: Purple",
-            "#35204F",
-            () -> setColour(Color.rgb(53, 32, 79))
-        );
-        margyt().addSettingsRow(
-            "Custom HEX",
-            "Enter a colour such as #202124",
-            this::showHexDialog
-        );
+    public void onStart(android.content.Context context) {
+        selectedColour = margyt().prefs().getInt(PREF_COLOUR, DEFAULT_COLOUR);
+        margyt().log("Custom Background loaded. Current colour: " +
+            String.format("#%06X", 0xFFFFFF & selectedColour));
     }
 
-    private void setColour(int colour) {
-        margyt().prefs().edit().putInt(PREF_COLOUR, colour).apply();
-        margyt().log("Background colour set to " + String.format("#%06X", (0xFFFFFF & colour)));
-        Activity activity = margyt().screen();
-        if (activity != null) {
-            margyt().showWindow("Custom Background", "Colour saved. Restart TikTok to apply it everywhere.");
-        }
+    @Override
+    public void onActivityResumed(Activity activity) {
+        if (dialogShown) return;
+        dialogShown = true;
+        activity.runOnUiThread(() -> showColourPicker(activity));
     }
 
-    private void showHexDialog() {
-        Activity activity = margyt().screen();
-        if (activity == null) {
-            margyt().log("Could not open HEX dialog: no active screen");
-            return;
-        }
+    private void showColourPicker(Activity activity) {
+        String[] options = {
+            "Default dark (#202124)",
+            "Midnight blue (#172554)",
+            "Forest (#16352B)",
+            "Purple (#35204F)",
+            "Custom HEX…"
+        };
+        new AlertDialog.Builder(activity)
+            .setTitle("Custom Background")
+            .setItems(options, (dialog, which) -> {
+                switch (which) {
+                    case 0: setColour(DEFAULT_COLOUR); break;
+                    case 1: setColour(Color.rgb(23, 37, 84)); break;
+                    case 2: setColour(Color.rgb(22, 53, 43)); break;
+                    case 3: setColour(Color.rgb(53, 32, 79)); break;
+                    case 4: showHexDialog(activity); break;
+                    default: break;
+                }
+            })
+            .setOnCancelListener(dialog -> margyt().log("Background colour unchanged"))
+            .show();
+    }
 
+    private void showHexDialog(Activity activity) {
         EditText input = new EditText(activity);
         input.setSingleLine(true);
         input.setHint("#202124");
@@ -72,7 +67,7 @@ public final class CustomBackgroundPlugin extends MargyPlugin {
                 String value = input.getText().toString().trim();
                 if (!value.startsWith("#")) value = "#" + value;
                 if (!value.matches("#[0-9a-fA-F]{6}")) {
-                    margyt().showWindow("Invalid HEX", "Use six hexadecimal digits, for example #202124.");
+                    margyt().log("Invalid HEX colour: " + value);
                     return;
                 }
                 setColour(Color.parseColor(value));
@@ -80,21 +75,25 @@ public final class CustomBackgroundPlugin extends MargyPlugin {
             .show();
     }
 
+    private void setColour(int colour) {
+        selectedColour = colour;
+        margyt().prefs().edit().putInt(PREF_COLOUR, colour).apply();
+        margyt().log("Background colour set to " +
+            String.format("#%06X", 0xFFFFFF & colour) +
+            ". Restart TikTok to apply consistently.");
+    }
+
     @Override
     public int onColour(int original) {
         int alpha = Color.alpha(original);
         if (alpha < 80) return original;
 
-        int red = Color.red(original);
-        int green = Color.green(original);
-        int blue = Color.blue(original);
-
-        // The public plugin API does not identify whether a colour belongs to a
-        // background or a foreground. Only replace near-black colours to reduce
-        // the chance of recolouring text and icons.
-        if (red <= 48 && green <= 48 && blue <= 48) {
-            int selected = margyt().prefs().getInt(PREF_COLOUR, DEFAULT_COLOUR);
-            return Color.argb(alpha, Color.red(selected), Color.green(selected), Color.blue(selected));
+        if (Color.red(original) <= 48 &&
+            Color.green(original) <= 48 &&
+            Color.blue(original) <= 48) {
+            int selected = selectedColour;
+            return Color.argb(alpha, Color.red(selected),
+                Color.green(selected), Color.blue(selected));
         }
         return original;
     }
