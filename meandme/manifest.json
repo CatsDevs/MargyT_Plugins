@@ -1,0 +1,11 @@
+{
+  "id": "catsdevs.meandme",
+  "name": "MeAndMe",
+  "name_ru": "MeAndMe",
+  "version": "1.0.0",
+  "author": "CatsDevs",
+  "description": "Experimental automatic day/night colour adjustment.",
+  "description_ru": "Экспериментальная автоматическая смена светлых и тёмных цветов по времени суток.",
+  "entry": "cat.catsdevs.meandme.MeAndMe",
+  "min_api": 1
+}
