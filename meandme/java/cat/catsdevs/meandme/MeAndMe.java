@@ -1,25 +1,33 @@
 package cat.catsdevs.meandme;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
 import cat.narezany.margyt.plugin.MargyPlugin;
 
 /**
- * MeAndMe: experimental automatic day/night colour adjustment.
- * The public MargyT API has no render/frame hook for motion blur.
+ * MeAndMe: configurable day/night colour adjustment.
+ * Motion Blur is not bundled in this version; it needs the separate engine
+ * implementation from the supplied classes.jar.
  */
 public final class MeAndMe extends MargyPlugin {
+    private static final String PREF_THEME_MODE = "meandme_theme_mode";
+    private static final int MODE_AUTO = 0;
+    private static final int MODE_LIGHT = 1;
+    private static final int MODE_DARK = 2;
+
     private static volatile boolean nightMode = true;
-    private static final int DAY_BACKGROUND = Color.rgb(245, 245, 245);
-    private static final int NIGHT_BACKGROUND = Color.rgb(24, 24, 27);
 
     @Override
-    public void onStart(android.content.Context context) {
+    public void onStart(Context context) {
         updateMode();
-        margyt().log("MeAndMe loaded. Automatic day/night mode enabled.");
+        margyt().log("MeAndMe 1.1.0 loaded.");
     }
 
     @Override
@@ -27,10 +35,57 @@ public final class MeAndMe extends MargyPlugin {
         updateMode();
     }
 
+    @Override
+    public boolean onOpenSettings(Activity activity) {
+        try {
+            SharedPreferences prefs = margyt().prefs();
+            int current = prefs.getInt(PREF_THEME_MODE, MODE_AUTO);
+            String[] choices = {
+                "Автоматически (07:00–18:59 / 19:00–06:59)",
+                "Всегда светлая",
+                "Всегда тёмная"
+            };
+
+            new AlertDialog.Builder(activity)
+                .setTitle("MeAndMe — тема")
+                .setSingleChoiceItems(choices, current, (dialog, which) -> {
+                    prefs.edit().putInt(PREF_THEME_MODE, which).apply();
+                    updateMode();
+                    dialog.dismiss();
+                    Toast.makeText(activity,
+                        which == MODE_AUTO ? "Автоматическая тема" :
+                        which == MODE_LIGHT ? "Светлая тема" : "Тёмная тема",
+                        Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Закрыть", null)
+                .show();
+        } catch (Exception e) {
+            margyt().log("MeAndMe settings error: " + e);
+        }
+        return true;
+    }
+
+    @Override
+    public void onSettingsChanged(String key) {
+        updateMode();
+    }
+
     private void updateMode() {
-        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        // Day theme from 07:00 to 18:59; dark theme from 19:00 to 06:59.
-        nightMode = hour < 7 || hour >= 19;
+        int mode = MODE_AUTO;
+        try {
+            mode = margyt().prefs().getInt(PREF_THEME_MODE, MODE_AUTO);
+        } catch (Exception ignored) {
+            // Use automatic mode if preferences are not available yet.
+        }
+
+        if (mode == MODE_LIGHT) {
+            nightMode = false;
+        } else if (mode == MODE_DARK) {
+            nightMode = true;
+        } else {
+            int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+            nightMode = hour < 7 || hour >= 19;
+        }
     }
 
     @Override
@@ -42,18 +97,14 @@ public final class MeAndMe extends MargyPlugin {
         int green = Color.green(original);
         int blue = Color.blue(original);
 
-        // MargyT's public hook does not tell backgrounds apart from text/icons.
-        // Limit changes to near-black/near-white colours to reduce side effects.
+        // The API does not identify whether a colour belongs to a background,
+        // text or icon, so only near-black and near-white colours are adjusted.
         if (!nightMode && red <= 38 && green <= 38 && blue <= 38) {
-            return Color.argb(alpha, Color.red(DAY_BACKGROUND),
-                Color.green(DAY_BACKGROUND), Color.blue(DAY_BACKGROUND));
+            return Color.argb(alpha, 245, 245, 245);
         }
-
         if (nightMode && red >= 232 && green >= 232 && blue >= 232) {
-            return Color.argb(alpha, Color.red(NIGHT_BACKGROUND),
-                Color.green(NIGHT_BACKGROUND), Color.blue(NIGHT_BACKGROUND));
+            return Color.argb(alpha, 24, 24, 27);
         }
-
         return original;
     }
 }
