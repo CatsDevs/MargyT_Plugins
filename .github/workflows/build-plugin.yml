@@ -1,10 +1,11 @@
-name: Build MargyT plugin
+name: Build MargyT plugins
 
 on:
   workflow_dispatch:
   push:
     paths:
       - "plugin/**"
+      - "meandme/**"
       - ".github/workflows/build-plugin.yml"
 
 permissions:
@@ -31,22 +32,27 @@ jobs:
       - name: Get MargyT build tools
         run: git clone --depth 1 https://github.com/xzwew/MargyT.git MargyT
 
-      - name: Add plugin to MargyT build tree
-        run: |
-          mkdir -p MargyT/examples/custom-background
-          cp -R plugin/. MargyT/examples/custom-background/
-
-      - name: Build .mtp
+      - name: Build Custom Background
         working-directory: MargyT
         run: |
+          mkdir -p examples/custom-background
+          cp -R ../plugin/. examples/custom-background/
           python3 -m margyt.plugin examples/custom-background
           mkdir -p ../dist
           find examples/custom-background -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
+
+      - name: Build MeAndMe
+        working-directory: MargyT
+        run: |
+          mkdir -p examples/meandme
+          cp -R ../meandme/. examples/meandme/
+          python3 -m margyt.plugin examples/meandme
+          find examples/meandme -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
           test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
 
-      - name: Upload plugin artifact
+      - name: Upload plugin artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: CustomBackgroundPlugin-mtp
+          name: MargyT-Plugins-mtp
           path: dist/*.mtp
           if-no-files-found: error
