@@ -1,0 +1,11 @@
+{
+  "id": "catsdevs.themecolor",
+  "name": "ThemeColor",
+  "name_ru": "Цветовая тема",
+  "version": "1.0.0",
+  "author": "CatsDevs",
+  "description": "Customize interface background and text colours, HEX values, presets and recolouring strength.",
+  "description_ru": "Настройка цветов фона и текста, HEX, пресеты и интенсивность перекраски.",
+  "entry": "cat.catsdevs.themecolor.ThemeColor",
+  "min_api": 4
+}
