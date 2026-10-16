@@ -1,24 +1,22 @@
-# MargyT Plugins — Custom Background
+# Color Studio
 
-This repository builds a `.mtp` plugin for MargyT using GitHub Actions.
+Customizable colour palette plugin for MargyT (API 4).
 
-## Build on GitHub
+## Settings
 
-1. Open the **Actions** tab.
-2. Select **Build MargyT plugin**.
-3. If no run started after a commit, choose **Run workflow**.
-4. Open the completed run and download the **CustomBackgroundPlugin-mtp** artifact ZIP.
-5. Extract the `.mtp` file from that ZIP.
+Open **MargyT → Plugins → Color Studio** and tap the plugin to open its settings. Configure:
+- Enable/disable the theme
+- Background HEX
+- Cards/dividers HEX
+- Text HEX
+- Reset to defaults
 
-## Install
+Colours are stored in the active account's private preferences; guest settings are separate when signed out.
 
-In TikTok with MargyT installed, open **Settings and privacy → MargyT → Plugins → Install a plugin**, then choose the `.mtp` file and enable it.
+## Important limitation
 
-## Current behavior and limitations
+MargyT's public `onColour(int)` hook does not identify a colour's role. Color Studio therefore transforms only near-neutral colours, mapping brightness onto the selected background → surface → text palette. Saturated colours are left unchanged to avoid altering video content and most brand/accent colours. Some interface elements may not change, and some neutral text or icons may be affected along with backgrounds.
 
-- Offers several dark-colour presets and a custom six-digit HEX value.
-- Recolours only near-black colours received by MargyT's public `onColour(int)` hook.
-- The public hook does not tell a plugin whether a colour is a background, text, or icon colour. This conservative filter avoids changing most foreground colours, but it cannot recolour every background in TikTok.
-- Requires plugin API 4 because it uses the current screen helper for the HEX dialog.
+## Build and install
 
-Only install plugin files you trust; MargyT plugins run inside TikTok with the app's permissions.
+The GitHub Actions workflow builds the `.mtp` artifact. Open **Actions → Build MargyT plugins**, then download the `MargyT-Plugins-mtp` artifact from a successful run. Install the `.mtp` file via **TikTok → Settings and privacy → MargyT → Plugins → Install a plugin**.
