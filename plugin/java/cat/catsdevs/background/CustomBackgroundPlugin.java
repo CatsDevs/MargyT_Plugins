@@ -13,13 +13,12 @@ import android.widget.Switch;
 
 import cat.narezany.margyt.plugin.MargyPlugin;
 
-/** Configurable neutral interface palette for MargyT API 4. */
+/** Configurable neutral interface palette for MargyT. */
 public final class CustomBackgroundPlugin extends MargyPlugin {
     private static final String KEY_ENABLED = "theme_enabled";
     private static final String KEY_BG = "theme_background";
     private static final String KEY_SURFACE = "theme_surface";
     private static final String KEY_TEXT = "theme_text";
-
     private static final int DEFAULT_BG = Color.rgb(24, 25, 30);
     private static final int DEFAULT_SURFACE = Color.rgb(43, 45, 53);
     private static final int DEFAULT_TEXT = Color.rgb(242, 243, 247);
@@ -35,14 +34,9 @@ public final class CustomBackgroundPlugin extends MargyPlugin {
         margyt().log("Color Studio loaded");
     }
 
-    @Override
-    public void onAccountChanged(String uid) {
-        // Keep palettes separate between accounts and the signed-out guest.
-        loadSettings();
-    }
-
+    // Use prefs() for compatibility with the API shipped by the current build tool.
     private SharedPreferences settings() {
-        return margyt().accountPrefs();
+        return margyt().prefs();
     }
 
     private void loadSettings() {
@@ -58,7 +52,8 @@ public final class CustomBackgroundPlugin extends MargyPlugin {
         }
     }
 
-    @Override
+    // Public settings entry point is discovered by MargyT's settings menu.
+    // It intentionally has no @Override so it also compiles with older API stubs.
     public boolean onOpenSettings(Activity activity) {
         if (activity == null || activity.isFinishing()) return false;
         showSettings(activity);
@@ -82,16 +77,15 @@ public final class CustomBackgroundPlugin extends MargyPlugin {
         EditText bg = colourField(activity, p.getInt(KEY_BG, DEFAULT_BG));
         EditText card = colourField(activity, p.getInt(KEY_SURFACE, DEFAULT_SURFACE));
         EditText fg = colourField(activity, p.getInt(KEY_TEXT, DEFAULT_TEXT));
-
-        addLabel(activity, layout, "Background HEX");
+        addLabel(layout, "Background HEX");
         layout.addView(bg);
-        addLabel(activity, layout, "Cards / dividers HEX");
+        addLabel(layout, "Cards / dividers HEX");
         layout.addView(card);
-        addLabel(activity, layout, "Text HEX");
+        addLabel(layout, "Text HEX");
         layout.addView(fg);
 
         TextView note = new TextView(activity);
-        note.setText("Use #RRGGBB. Only near-grey interface colours are changed. MargyT's public colour hook cannot reliably distinguish text, backgrounds and icons.");
+        note.setText("Use #RRGGBB. Only near-grey interface colours are changed. The public colour hook cannot reliably distinguish text, backgrounds and icons.");
         note.setTextSize(12);
         note.setPadding(0, pad / 2, 0, 0);
         layout.addView(note);
@@ -117,17 +111,15 @@ public final class CustomBackgroundPlugin extends MargyPlugin {
                     return;
                 }
                 p.edit().putBoolean(KEY_ENABLED, toggle.isChecked())
-                    .putInt(KEY_BG, newBg)
-                    .putInt(KEY_SURFACE, newSurface)
+                    .putInt(KEY_BG, newBg).putInt(KEY_SURFACE, newSurface)
                     .putInt(KEY_TEXT, newText).apply();
                 loadSettings();
                 margyt().log("Color Studio settings saved");
-            })
-            .show();
+            }).show();
     }
 
-    private static void addLabel(Activity activity, LinearLayout layout, String value) {
-        TextView label = new TextView(activity);
+    private static void addLabel(LinearLayout layout, String value) {
+        TextView label = new TextView(layout.getContext());
         label.setText(value);
         label.setTextSize(13);
         label.setPadding(0, 12, 0, 4);
@@ -160,15 +152,8 @@ public final class CustomBackgroundPlugin extends MargyPlugin {
         if (!enabled) return original;
         int alpha = Color.alpha(original);
         if (alpha < 80) return original;
-
-        int r = Color.red(original);
-        int g = Color.green(original);
-        int b = Color.blue(original);
-        int max = Math.max(r, Math.max(g, b));
-        int min = Math.min(r, Math.min(g, b));
-
-        // Preserve saturated colours such as brand accents, icons and video.
-        if (max - min > 18) return original;
+        int r = Color.red(original), g = Color.green(original), b = Color.blue(original);
+        if (Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 18) return original;
 
         float level = (0.2126f * r + 0.7152f * g + 0.0722f * b) / 255f;
         int mapped = level < 0.5f
