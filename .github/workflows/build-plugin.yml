@@ -7,6 +7,7 @@ on:
       - "plugin/**"
       - "meandme/**"
       - "blurmika/**"
+      - "themecolor/**"
       - ".github/workflows/build-plugin.yml"
 
 permissions:
@@ -58,6 +59,15 @@ jobs:
           cp -R ../blurmika/. examples/blurmika/
           python3 -m margyt.plugin examples/blurmika
           find examples/blurmika -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
+          test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
+
+      - name: Build ThemeColor
+        working-directory: MargyT
+        run: |
+          mkdir -p examples/themecolor
+          cp -R ../themecolor/. examples/themecolor/
+          python3 -m margyt.plugin examples/themecolor
+          find examples/themecolor -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
           test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
 
       - name: Upload plugin artifacts
