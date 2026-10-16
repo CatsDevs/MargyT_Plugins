@@ -57,7 +57,7 @@ jobs:
           mkdir -p examples/blurmika
           cp -R ../blurmika/. examples/blurmika/
           python3 -m margyt.plugin examples/blurmika
-          find examples/blurmika -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \\;
+          find examples/blurmika -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
           test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
 
       - name: Upload plugin artifacts
