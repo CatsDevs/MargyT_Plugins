@@ -31,7 +31,8 @@ public final class ThemeColor extends MargyPlugin {
         margyt().log("ThemeColor loaded.");
     }
 
-    @Override public void onAccountChanged(String uid) { loadSettings(); }
+    // Kept without @Override to compile with older MargyT API stubs.
+    public void onAccountChanged(String uid) { loadSettings(); }
 
     private void loadSettings() {
         android.content.SharedPreferences p = margyt().prefs();
@@ -42,7 +43,8 @@ public final class ThemeColor extends MargyPlugin {
         strength = Math.max(0, Math.min(100, p.getInt(KEY_STRENGTH, 100)));
     }
 
-    @Override public boolean onOpenSettings(Activity activity) {
+    // MargyT discovers this public settings method where supported.
+    public boolean onOpenSettings(Activity activity) {
         if (activity == null || activity.isFinishing()) return false;
         showSettings(activity);
         return true;
@@ -116,8 +118,9 @@ public final class ThemeColor extends MargyPlugin {
                 String value = input.getText().toString().trim();
                 if (!value.startsWith("#")) value = "#" + value;
                 if (!value.matches("#[0-9a-fA-F]{6}")) {
-                    margyt().showWindow("ThemeColor", "Неверный HEX. Пример: #202124");
-                    showSettings(activity);
+                    new AlertDialog.Builder(activity).setTitle("ThemeColor")
+                        .setMessage("Неверный HEX. Пример: #202124")
+                        .setPositiveButton("OK", (d, w) -> showSettings(activity)).show();
                     return;
                 }
                 int parsed = Color.parseColor(value);
