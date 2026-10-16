@@ -1,11 +1,11 @@
 {
   "id": "catsdevs.custombackground",
-  "name": "Custom Background",
-  "name_ru": "Свой фон",
-  "version": "1.0.0",
+  "name": "Color Studio",
+  "name_ru": "Цветовая тема",
+  "version": "2.0.0",
   "author": "CatsDevs",
-  "description": "Recolour very dark interface colours; choose a preset or enter a HEX colour.",
-  "description_ru": "Меняет очень тёмные цвета интерфейса; можно выбрать цвет или ввести HEX.",
+  "description": "Customize neutral interface background, card, divider and text colours in plugin settings.",
+  "description_ru": "Настройка цветов фона, карточек, разделителей и текста в меню плагина.",
   "entry": "cat.catsdevs.background.CustomBackgroundPlugin",
   "min_api": 4
 }
