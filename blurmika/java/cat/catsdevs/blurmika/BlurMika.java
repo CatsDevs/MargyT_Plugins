@@ -3,12 +3,7 @@ package cat.catsdevs.blurmika;
 import android.app.Activity;
 import android.content.Context;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
 
 import java.util.Collections;
 import java.util.Map;
@@ -17,27 +12,49 @@ import java.util.WeakHashMap;
 import cat.narezany.margyt.plugin.MargyPlugin;
 
 /**
- * BlurMika — soft Frutiger Aero-inspired screen entrance motion.
+ * BlurMika 1.1.0 — Frutiger Aero-inspired screen transitions.
  *
- * The public MargyT plugin API has lifecycle callbacks but no dedicated
- * navigation-transition hook. This animates each newly created Activity's
- * content view, which gives app-entry and activity-change motion without
- * replacing the app's UI or requiring extra permissions.
+ * Uses MargyT's API 2 onScreen callback to react to in-app screen changes,
+ * and Activity lifecycle as a fallback for app entry / newly created screens.
+ * It animates existing content only; it does not replace TikTok's UI.
  */
 public final class BlurMika extends MargyPlugin {
-    private static final long DURATION_MS = 380L;
-    private static final Map<Activity, Boolean> animatedActivities =
-            Collections.synchronizedMap(new WeakHashMap<Activity, Boolean>());
+    private static final long DURATION_MS = 360L;
+    private static final float START_ALPHA = 0.0f;
+    private static final float START_SCALE = 0.975f;
+    private static final float START_TRANSLATION_DP = 12.0f;
+
+    private static final Map<Activity, String> lastScreens =
+            Collections.synchronizedMap(new WeakHashMap<Activity, String>());
+    private static final Map<Activity, Long> lastAnimations =
+            Collections.synchronizedMap(new WeakHashMap<Activity, Long>());
 
     @Override
     public void onStart(Context context) {
-        margyt().log("BlurMika 1.0.0 loaded. Aero motion enabled.");
+        margyt().log("BlurMika 1.1.0 loaded. Aero screen transitions enabled.");
     }
 
     @Override
     public void onActivityCreated(final Activity activity) {
-        if (activity == null || animatedActivities.containsKey(activity)) return;
-        animatedActivities.put(activity, Boolean.TRUE);
+        if (activity == null) return;
+        animateIfRecentAnimationMissing(activity, 0L);
+    }
+
+    @Override
+    public void onScreen(final Activity activity, final String name) {
+        if (activity == null) return;
+        String safeName = name == null ? "" : name;
+        String previous = lastScreens.get(activity);
+        if (safeName.equals(previous)) return;
+        lastScreens.put(activity, safeName);
+        animateIfRecentAnimationMissing(activity, 650L);
+    }
+
+    private void animateIfRecentAnimationMissing(final Activity activity, long dedupeWindowMs) {
+        Long last = lastAnimations.get(activity);
+        long now = android.os.SystemClock.uptimeMillis();
+        if (last != null && now - last.longValue() < dedupeWindowMs) return;
+        lastAnimations.put(activity, Long.valueOf(now));
 
         final View content = activity.findViewById(android.R.id.content);
         if (content == null) return;
@@ -45,39 +62,40 @@ public final class BlurMika extends MargyPlugin {
         content.post(new Runnable() {
             @Override
             public void run() {
-                if (activity.isFinishing() || content.getWidth() == 0 || content.getHeight() == 0) {
+                if (activity.isFinishing() || content.getWidth() <= 0 || content.getHeight() <= 0) {
                     return;
                 }
 
                 float density = content.getResources().getDisplayMetrics().density;
-                AnimationSet entrance = new AnimationSet(true);
-                entrance.setInterpolator(new DecelerateInterpolator(1.7f));
-                entrance.setDuration(DURATION_MS);
-                entrance.setFillAfter(false);
-
-                AlphaAnimation fade = new AlphaAnimation(0.0f, 1.0f);
-                fade.setDuration(DURATION_MS);
-
-                ScaleAnimation scale = new ScaleAnimation(
-                        0.965f, 1.0f, 0.965f, 1.0f,
-                        Animation.RELATIVE_TO_SELF, 0.5f,
-                        Animation.RELATIVE_TO_SELF, 0.5f);
-                scale.setDuration(DURATION_MS);
-
-                TranslateAnimation floatUp = new TranslateAnimation(
-                        0.0f, 0.0f, 14.0f * density, 0.0f);
-                floatUp.setDuration(DURATION_MS);
-
-                entrance.addAnimation(fade);
-                entrance.addAnimation(scale);
-                entrance.addAnimation(floatUp);
-                content.startAnimation(entrance);
+                content.animate().cancel();
+                content.setAlpha(START_ALPHA);
+                content.setScaleX(START_SCALE);
+                content.setScaleY(START_SCALE);
+                content.setTranslationY(START_TRANSLATION_DP * density);
+                content.animate()
+                        .alpha(1.0f)
+                        .scaleX(1.0f)
+                        .scaleY(1.0f)
+                        .translationY(0.0f)
+                        .setDuration(DURATION_MS)
+                        .setInterpolator(new DecelerateInterpolator(1.6f))
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                content.setAlpha(1.0f);
+                                content.setScaleX(1.0f);
+                                content.setScaleY(1.0f);
+                                content.setTranslationY(0.0f);
+                            }
+                        })
+                        .start();
             }
         });
     }
 
     @Override
     public void onStop() {
-        animatedActivities.clear();
+        lastScreens.clear();
+        lastAnimations.clear();
     }
 }
