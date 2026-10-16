@@ -2,10 +2,10 @@
   "id": "catsdevs.blurmika",
   "name": "BlurMika",
   "name_ru": "BlurMika",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "author": "CatsDevs",
-  "description": "Frutiger Aero-inspired soft fade, float and scale animations when activities appear.",
-  "description_ru": "Плавные переходы в стиле Frutiger Aero: проявление, лёгкое увеличение и эффект парения при появлении экранов.",
+  "description": "Frutiger Aero-inspired fade, float, scale and directional motion transitions.",
+  "description_ru": "Переходы в стиле Frutiger Aero: плавное проявление, парение, масштабирование и направленное движение с учётом системных настроек анимации.",
   "entry": "cat.catsdevs.blurmika.BlurMika",
   "min_api": 1
 }
