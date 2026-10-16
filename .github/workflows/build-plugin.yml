@@ -6,6 +6,7 @@ on:
     paths:
       - "plugin/**"
       - "meandme/**"
+      - "blurmika/**"
       - ".github/workflows/build-plugin.yml"
 
 permissions:
