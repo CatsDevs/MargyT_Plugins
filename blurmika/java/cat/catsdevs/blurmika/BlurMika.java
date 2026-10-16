@@ -12,11 +12,8 @@ import java.util.WeakHashMap;
 import cat.narezany.margyt.plugin.MargyPlugin;
 
 /**
- * BlurMika 1.1.0 — Frutiger Aero-inspired screen transitions.
- *
- * Uses MargyT's API 2 onScreen callback to react to in-app screen changes,
- * and Activity lifecycle as a fallback for app entry / newly created screens.
- * It animates existing content only; it does not replace TikTok's UI.
+ * BlurMika 1.1.1 — Frutiger Aero-inspired screen appearance animation.
+ * Uses documented MargyT lifecycle hooks; it does not replace TikTok's UI.
  */
 public final class BlurMika extends MargyPlugin {
     private static final long DURATION_MS = 360L;
@@ -24,40 +21,32 @@ public final class BlurMika extends MargyPlugin {
     private static final float START_SCALE = 0.975f;
     private static final float START_TRANSLATION_DP = 12.0f;
 
-    private static final Map<Activity, String> lastScreens =
-            Collections.synchronizedMap(new WeakHashMap<Activity, String>());
     private static final Map<Activity, Long> lastAnimations =
             Collections.synchronizedMap(new WeakHashMap<Activity, Long>());
 
     @Override
     public void onStart(Context context) {
-        margyt().log("BlurMika 1.1.0 loaded. Aero screen transitions enabled.");
+        margyt().log("BlurMika 1.1.1 loaded. Aero transitions enabled.");
     }
 
     @Override
     public void onActivityCreated(final Activity activity) {
-        if (activity == null) return;
-        animateIfRecentAnimationMissing(activity, 0L);
+        if (activity != null) animateIfRecentAnimationMissing(activity, 0L);
     }
 
     @Override
-    public void onScreen(final Activity activity, final String name) {
-        if (activity == null) return;
-        String safeName = name == null ? "" : name;
-        String previous = lastScreens.get(activity);
-        if (safeName.equals(previous)) return;
-        lastScreens.put(activity, safeName);
-        animateIfRecentAnimationMissing(activity, 650L);
+    public void onActivityResumed(final Activity activity) {
+        if (activity != null) animateIfRecentAnimationMissing(activity, 650L);
     }
 
     private void animateIfRecentAnimationMissing(final Activity activity, long dedupeWindowMs) {
-        Long last = lastAnimations.get(activity);
         long now = android.os.SystemClock.uptimeMillis();
+        Long last = lastAnimations.get(activity);
         if (last != null && now - last.longValue() < dedupeWindowMs) return;
-        lastAnimations.put(activity, Long.valueOf(now));
 
         final View content = activity.findViewById(android.R.id.content);
         if (content == null) return;
+        lastAnimations.put(activity, Long.valueOf(now));
 
         content.post(new Runnable() {
             @Override
@@ -95,7 +84,6 @@ public final class BlurMika extends MargyPlugin {
 
     @Override
     public void onStop() {
-        lastScreens.clear();
         lastAnimations.clear();
     }
 }
