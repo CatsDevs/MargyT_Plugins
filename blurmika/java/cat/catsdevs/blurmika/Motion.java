@@ -37,7 +37,7 @@ final class Motion {
             if (!view.isAttachedToWindow()) return;
             view.animate().alpha(1f).scaleX(1f).scaleY(1f).translationY(0f)
                     .setDuration(320L)
-                    .setInterpolator(new android.view.animation.PathInterpolator(0.2f, 0f, 0f, 1f))
+                    .setInterpolator(new DecelerateInterpolator(1.4f))
                     .withEndAction(() -> reset(view))
                     .start();
         });
