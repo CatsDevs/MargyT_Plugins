@@ -25,7 +25,7 @@ final class Glare extends Drawable {
     private int level = 2;
     private boolean ready;
 
-    void setLevel(int wanted) {
+    void setStrength(int wanted) {
         if (wanted < 1) wanted = 1;
         if (wanted > 3) wanted = 3;
         if (wanted == level) return;
