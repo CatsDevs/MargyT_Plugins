@@ -4,9 +4,6 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "plugin/**"
-      - "meandme/**"
-      - "blurmika/**"
       - "GlassAero/**"
       - ".github/workflows/build-plugin.yml"
 
