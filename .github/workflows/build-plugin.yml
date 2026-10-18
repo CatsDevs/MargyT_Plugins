@@ -7,7 +7,6 @@ on:
       - "plugin/**"
       - "meandme/**"
       - "blurmika/**"
-      - "themecolor/**"
       - "GlassAero/**"
       - ".github/workflows/build-plugin.yml"
 
