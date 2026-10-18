@@ -8,6 +8,7 @@ on:
       - "meandme/**"
       - "blurmika/**"
       - "themecolor/**"
+      - "GlassAero/**"
       - ".github/workflows/build-plugin.yml"
 
 permissions:
@@ -41,7 +42,7 @@ jobs:
           cp -R ../plugin/. examples/custom-background/
           python3 -m margyt.plugin examples/custom-background
           mkdir -p ../dist
-          find examples/custom-background -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
+          find examples/custom-background -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \\;
 
       - name: Build MeAndMe
         working-directory: MargyT
@@ -49,7 +50,7 @@ jobs:
           mkdir -p examples/meandme
           cp -R ../meandme/. examples/meandme/
           python3 -m margyt.plugin examples/meandme
-          find examples/meandme -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
+          find examples/meandme -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \\;
           test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
 
       - name: Build BlurMika
@@ -58,7 +59,7 @@ jobs:
           mkdir -p examples/blurmika
           cp -R ../blurmika/. examples/blurmika/
           python3 -m margyt.plugin examples/blurmika
-          find examples/blurmika -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
+          find examples/blurmika -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \\;
           test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
 
       - name: Build ThemeColor
@@ -67,7 +68,16 @@ jobs:
           mkdir -p examples/themecolor
           cp -R ../themecolor/. examples/themecolor/
           python3 -m margyt.plugin examples/themecolor
-          find examples/themecolor -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \;
+          find examples/themecolor -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \\;
+          test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
+
+      - name: Build Aero Glass
+        working-directory: MargyT
+        run: |
+          mkdir -p examples/glassaero
+          cp -R ../GlassAero/. examples/glassaero/
+          python3 -m margyt.plugin examples/glassaero
+          find examples/glassaero -maxdepth 1 -type f -name '*.mtp' -exec cp {} ../dist/ \\;
           test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
 
       - name: Upload plugin artifacts
