@@ -1,11 +1,11 @@
 {
-  "id": "catsdevs.aeroglass",
+  "id": "dev.aeroglass",
   "name": "Aero Glass",
   "name_ru": "Aero Glass",
   "version": "1.0",
-  "author": "Me",
+  "author": "CatDev",
   "description": "Frutiger Aero glass sheen over every screen: a glossy top highlight, a blue diagonal reflection and a cyan glow at the bottom.",
   "description_ru": "Стеклянный блик в стиле Frutiger Aero поверх каждого экрана: глянцевый верх, голубое диагональное отражение и бирюзовое свечение снизу.",
-  "entry": "catsdevs.aeroglass.AeroGlass",
+  "entry": "dev.aeroglass.AeroGlass",
   "min_api": 2
 }
