@@ -27,12 +27,10 @@ import cat.narezany.margyt.plugin.MargyPlugin;
 public final class AeroGlass extends MargyPlugin {
     private static final String KEY_ON = "glass_on";
     private static final String KEY_LEVEL = "glass_level";
-    private static final String[] LEVELS = {"", "soft", "medium", "strong"};
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<Activity, Dressed> dressed =
             Collections.synchronizedMap(new WeakHashMap<Activity, Dressed>());
-    private boolean rows;
 
     /** What was put on one window, kept so it can be taken off again. */
     private static final class Dressed {
@@ -69,13 +67,11 @@ public final class AeroGlass extends MargyPlugin {
 
     @Override
     public void onStart(Context context) {
-        addRows();
         margyt().log("Aero Glass 1.0 loaded.");
     }
 
     @Override
     public void onActivityCreated(Activity activity) {
-        addRows();
         dress(activity);
     }
 
@@ -116,7 +112,7 @@ public final class AeroGlass extends MargyPlugin {
                 d = new Dressed(decor);
                 dressed.put(activity, d);
             }
-            d.glare.setLevel(margyt().prefs().getInt(KEY_LEVEL, 2));
+            d.glare.setStrength(margyt().prefs().getInt(KEY_LEVEL, 2));
         } catch (Throwable error) {
             // a hook that throws drops the plugin for the whole process
             margyt().log("Aero Glass: " + error);
@@ -141,8 +137,6 @@ public final class AeroGlass extends MargyPlugin {
             public void run() {
                 try {
                     for (Activity activity : snapshot()) dress(activity);
-                    Activity now = margyt().screen();
-                    if (now != null) dress(now);
                 } catch (Throwable error) {
                     margyt().log("Aero Glass: " + error);
                 }
@@ -150,36 +144,4 @@ public final class AeroGlass extends MargyPlugin {
         });
     }
 
-    // -------------------------------------------------------------- settings
-
-    private void addRows() {
-        if (rows) return;
-        try {
-            margyt().addSettingsRow("Aero glass", "Turn the glass sheen on or off", () -> {
-                SharedPreferences p = margyt().prefs();
-                boolean on = !p.getBoolean(KEY_ON, true);
-                p.edit().putBoolean(KEY_ON, on).apply();
-                refresh();
-                say("Aero glass: " + (on ? "on" : "off"));
-            });
-            margyt().addSettingsRow("Glass strength", "Cycles soft, medium, strong", () -> {
-                SharedPreferences p = margyt().prefs();
-                int next = p.getInt(KEY_LEVEL, 2) % 3 + 1;
-                p.edit().putInt(KEY_LEVEL, next).apply();
-                refresh();
-                say("Glass strength: " + LEVELS[next]);
-            });
-            rows = true;
-        } catch (Throwable error) {
-            // tried again on the first activity if start-up was too early
-            margyt().log("Aero Glass: settings rows not added yet: " + error);
-        }
-    }
-
-    private void say(String message) {
-        try {
-            margyt().showWindow("Aero Glass", message);
-        } catch (Throwable ignored) {
-        }
-    }
 }
