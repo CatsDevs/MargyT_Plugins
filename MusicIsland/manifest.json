@@ -1,0 +1,11 @@
+{
+  "id": "catsdevs.musicisland",
+  "name": "Music Island",
+  "name_ru": "Music Island",
+  "version": "0.1.0",
+  "author": "CatsDevs",
+  "description": "A compact Dynamic-Island-style music widget UI prototype for MargyT.",
+  "description_ru": "Прототип компактного музыкального виджета в стиле Dynamic Island для MargyT.",
+  "entry": "cat.catsdevs.musicisland.MusicIsland",
+  "min_api": 2
+}
