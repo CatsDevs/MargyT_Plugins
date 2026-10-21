@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "GlassAero/**"
+      - "MusicIsland/**"
       - ".github/workflows/build-plugin.yml"
 
 permissions:
@@ -74,6 +75,15 @@ jobs:
           cp -R ../GlassAero/. examples/glassaero/
           python3 -m margyt.plugin examples/glassaero
           cp examples/glassaero/*.mtp ../dist/
+          test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
+
+      - name: Build Music Island
+        working-directory: MargyT
+        run: |
+          mkdir -p examples/musicisland
+          cp -R ../MusicIsland/. examples/musicisland/
+          python3 -m margyt.plugin examples/musicisland
+          cp examples/musicisland/*.mtp ../dist/
           test -n "$(find ../dist -maxdepth 1 -type f -name '*.mtp' -print -quit)"
 
       - name: Upload plugin artifacts
